@@ -22,7 +22,7 @@ phases:
     commands:
       - "aws eks --region $AWS_DEFAULT_REGION update-kubeconfig --name $EKS_CLUSTER_NAME"
       - chmod +x scripts/create_test.sh
-      - ./create_test.sh
+      - .scripts/create_test.sh
       - kubectl apply -f release/kubernetes-manifests.yaml -n test
   
   post_build: # Display the endpoint of the application

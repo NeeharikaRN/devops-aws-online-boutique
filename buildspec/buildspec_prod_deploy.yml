@@ -24,7 +24,7 @@ phases:
       - kubectl delete -f release/kubernetes-manifests.yaml -n dev
       - kubectl delete -f release/kubernetes-manifests.yaml -n test
       - chmod +x scripts/create_prod.sh
-      - ./create_prod.sh
+      - .scripts/create_prod.sh
       - kubectl apply -f release/kubernetes-manifests.yaml -n prod
   
   post_build: # Display the endpoint of the application
