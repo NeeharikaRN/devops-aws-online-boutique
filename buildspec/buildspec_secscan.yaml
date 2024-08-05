@@ -1,0 +1,48 @@
+version: 0.2
+phases:
+  install: # Install AWS CLI, Gradle, aws-codeguru-cli, checkov
+    runtime-versions:
+      java: latest
+      python: 3.8
+      golang: 1.15
+      nodejs: 12
+    commands:
+       - apt-get update
+       - apt-get install -y git python3 python3-pip
+       - pip install awscli checkov
+       - apt-get install -y wget apt-transport-https gnupg lsb-release curl
+       - curl -OL https://github.com/aws/aws-codeguru-cli/releases/download/0.2.3/aws-codeguru-cli.zip
+       - unzip aws-codeguru-cli.zip
+       - export PATH=$PATH:./aws-codeguru-cli/bin
+       - curl -sSL https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash
+       - helm repo add stable https://charts.helm.sh/stable && helm repo update
+       - wget -c https://services.gradle.org/distributions/gradle-8.6-bin.zip -P /tmp
+       - unzip -d /opt/gradle /tmp/gradle-8.6-bin.zip
+       - export PATH=$PATH:/opt/gradle/gradle-8.6/bin
+
+  pre_build: # Check availability of Gradle,Checkov,Helm and it's version
+    commands:
+      - echo -e '\nGradle version:'
+      - gradle -v
+      - echo -e '\nCheckov version:'
+      - checkov --version
+      - echo -e '\nHelm version:'
+      - helm version
+
+  build: # Static Code Analysis of Application
+    commands:
+      - echo -e "\n Running Dockerfile Scan"
+      - checkov -f src/adservice/Dockerfile --framework dockerfile --soft-fail --summary-position bottom
+      - checkov -f src/paymentservice/Dockerfile --framework dockerfile --soft-fail --summary-position bottom
+      - checkov -f src/cartservice/src/Dockerfile --framework dockerfile --soft-fail --summary-position bottom
+      - checkov -f src/checkoutservice/Dockerfile --framework dockerfile --soft-fail --summary-position bottom
+      - checkov -f src/currencyservice/Dockerfile --framework dockerfile --soft-fail --summary-position bottom
+      - checkov -f src/emailservice/Dockerfile --framework dockerfile --soft-fail --summary-position bottom
+      - checkov -f src/frontend/Dockerfile --framework dockerfile --soft-fail --summary-position bottom
+      - checkov -f src/loadgenerator/Dockerfile --framework dockerfile --soft-fail --summary-position bottom
+      - checkov -f src/productcatalogservice/Dockerfile --framework dockerfile --soft-fail --summary-position bottom
+      - checkov -f src/recommendationservice/Dockerfile --framework dockerfile --soft-fail --summary-position bottom
+      - checkov -f src/shippingservice/Dockerfile --framework dockerfile --soft-fail --summary-position bottom
+      - echo -e "\n Running Scan of Helm Chart files"
+      - checkov -d helm-charts --framework helm --soft-fail --summary-position bottom
+      - echo -e "\nRunning Static Code Analysis of app using AWS CodeGuru"
